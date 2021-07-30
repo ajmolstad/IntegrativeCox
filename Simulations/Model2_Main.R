@@ -1,0 +1,132 @@
+# --------------------------------------
+# Simulations for RR-cox
+# --------------------------------------
+uu <- as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
+source("~/blue/LRCox/Functions/RRCox_PPG.R")
+source("~/blue/LRCox/Functions/LRCox.R")
+
+X <- list(NA)
+library(Matrix)
+library(glmnet)
+library(MASS)
+library(survival)
+set.seed(uu)
+
+J <- 12
+rms <- NULL
+Ns <- rep(c(1250, 1350, 1350), 4)
+nreps <- 100
+
+temp <- expand.grid(p = c(rep(250, nreps)), 
+  r = 3, quan.cens = c(.25, .35, .45, .55, .65))
+p <- temp[uu,1]
+r <- temp[uu,2]
+quan.cens <- temp[uu,3]
+temp <- NULL
+kappa <- seq(2000, 2110, by = 10)
+
+
+genCoxDat <- function(uu, p, Ns, quan.cens, sigma.temp){
+  
+  set.seed(uu)
+  SigmaX <- matrix(0, p, p)
+  for(j in 1:p){
+    for(k in 1:p){
+      SigmaX[j,k] <- .7^(abs(j-k))
+    }
+  }
+  
+  for(j in 1:J){
+    X[[j]] <- mvrnorm(n = Ns[j], mu = rep(0, p), 
+                      SigmaX, tol = 1e-06, empirical = FALSE)
+  }
+  
+  cat(dim(X[[1]]), "\n")
+  
+  simulGomp <- function(datIndex, lambda, alpha, beta, rateC){
+    
+    N <- dim(X[[datIndex]])[1]
+    x <- as.matrix(X[[datIndex]])
+    v <- runif(n=N)
+    Tlat <- (1/alpha)*log(1 - (alpha*log(v))/(lambda*exp(x%*%beta)))
+    
+    # censoring times
+    if(datIndex%%3 == 0){  
+      temp <- quantile(Tlat, quan.cens+.2)
+    } else {
+      temp <- quantile(Tlat, quan.cens)
+    }  
+    
+    C <- rexp(n=N, rate=1/temp)
+    
+    # follow-up times and event indicators
+    time <- pmin(Tlat, C)
+    status <- 1*(Tlat <= C)
+    
+    # data set
+    list("id"=1:N, "time"=time, "status"=status, "X"=x, "Tlat" = Tlat, "C" = C, "linPred" = x%*%beta)
+  }
+  
+  
+  get_beta <- function(sigma.temp){
+    beta <- matrix(0, nrow=p, ncol=J)
+    nonzeroes <- sample(1:p, 20, replace=FALSE)
+    temp <- svd(matrix(rnorm(r*J), nrow=r, ncol=J))$v*(sqrt(2)/sqrt(r))
+    beta[nonzeroes, ] <- matrix(runif(20*r, 1, 2)*
+                                  sample(c(-1, 1), 20*r, replace=TRUE), nrow=20)%*%t(temp)
+    return(beta)
+  }
+  
+  beta <- get_beta(sigma.temp)
+  
+  dat <- list(NA)
+  for(kk in 1:J){
+    alpha <- pi/(600*sqrt(6))
+    lambda <- alpha*exp(- 0.5772 - alpha*kappa[kk])
+    dat[[kk]] <- simulGomp(datIndex = kk, lambda=lambda, alpha=alpha, beta=beta[,kk], rateC=0.1)
+  }
+  
+  return(list("dat" = dat, "beta" = beta, "SigmaX" = SigmaX))
+  
+}
+
+simDat <- genCoxDat(uu = uu, p = p, Ns = Ns, quan.cens = quan.cens, sigma.temp = sigma.temp)
+beta <- simDat$beta
+dat <- simDat$dat
+SigmaX <- simDat$SigmaX
+simDat <- NULL
+
+# ----------------------------------------------------
+# Split into training, validation, and testing sets
+# ----------------------------------------------------
+datVal <- list(NA)
+datTest <- list(NA)
+
+for(j in 1:J){
+  
+  ValInds <- (100*((j-1)%%3 + 1) + 1):(100*((j-1)%%3 + 1) + 150)
+  TestInds <- (100*((j-1)%%3 + 1) + 151):Ns[j]
+  datVal[[j]] <- list(
+    "X" = dat[[j]]$X[ValInds,],
+    "time" = dat[[j]]$time[ValInds],
+    "status" = dat[[j]]$status[ValInds],
+    "Tlat" = dat[[j]]$Tlat[ValInds],
+    "linPred" = dat[[j]]$linPred[ValInds])
+  
+  datTest[[j]] <- list(
+    "X" = dat[[j]]$X[TestInds,],
+    "time" = dat[[j]]$time[TestInds],
+    "status" = dat[[j]]$status[TestInds],
+    "Tlat" = dat[[j]]$Tlat[TestInds],
+    "linPred" = dat[[j]]$linPred[TestInds])
+  
+  dat[[j]]$X <- dat[[j]]$X[-c(TestInds, ValInds),]
+  dat[[j]]$time <- dat[[j]]$time[-c(TestInds, ValInds)]
+  dat[[j]]$status <- dat[[j]]$status[-c(TestInds, ValInds)]
+  
+}
+
+
+savefile <- paste("~/blue/LRCox/Simulations/Model2/Results/Model2_p",p,"_r",r,"_", sep="")
+source("~/blue/LRCox/Simulations/Fit_Main.R")
+
