@@ -1,3 +1,34 @@
+# ----------------------------------------
+# Our method
+# ----------------------------------------
+modFit <- IntCox(svec = seq(5, 30, by=5), rvec = 8:1, dat, mu = .1, quiet = TRUE, silent = FALSE, rho0=100)
+
+valerrsOurs <- array(0, dim=c(length(modFit$s), length(modFit$r),J))
+for(kk in 1:(length(modFit$s))){
+  for(jj in 1:length(modFit$r)){
+    for(ll in 1:J){
+      valerrsOurs[kk,jj,ll] <- coxnet.deviance(y=Surv(datVal[[ll]]$time, datVal[[ll]]$status), pred = datVal[[ll]]$X%*%modFit$beta[,ll,kk,jj])
+    }
+  }
+}
+
+out <- which(apply(valerrsOurs, c(1,2),sum) == min(apply(valerrsOurs, c(1,2),sum)), arr.ind=TRUE)
+betaLR <- modFit$beta[,,out[1,1], out[1,2]]
+
+
+out <- which(apply(valerrsOurs[,2,,drop=F], 1,sum) == min(apply(valerrsOurs[,2,,drop=F], 1,sum)), arr.ind=TRUE)
+betaLR2 <- modFit$beta[,,out, 2]
+out <- which(apply(valerrsOurs[,4,,drop=F], 1,sum) == min(apply(valerrsOurs[,4,,drop=F], 1,sum)), arr.ind=TRUE)
+betaLR4 <- modFit$beta[,,out, 4]
+out <- which(apply(valerrsOurs[,6,,drop=F], 1,sum) == min(apply(valerrsOurs[,6,,drop=F], 1,sum)), arr.ind=TRUE)
+betaLR6 <- modFit$beta[,,out,6]
+out <- which(apply(valerrsOurs[,7,,drop=F], 1,sum) == min(apply(valerrsOurs[,7,,drop=F], 1,sum)), arr.ind=TRUE)
+betaLR7 <- modFit$beta[,,out, 7]
+out <- which(apply(valerrsOurs[,8,,drop=F], 1,sum) == min(apply(valerrsOurs[,8,,drop=F], 1,sum)), arr.ind=TRUE)
+betaLR8 <- modFit$beta[,,out, 8]
+
+
+
 # ------------------------------------------------------------------
 # Fit separate L2 penalized models 
 # ------------------------------------------------------------------
@@ -137,24 +168,6 @@ for(kk in 1:(length(modfit_RRGL$lambda.vec))){
 out <- which(apply(valerrsOurs, c(1,2),sum) == min(apply(valerrsOurs, c(1,2),sum)), arr.ind=TRUE)
 betaRRGL <- modfit_RRGL$beta[out[1,1], out[1,2],,]
 
-# ----------------------------------------
-# 
-# ----------------------------------------
-modFit <- getPath(svec = seq(5, 30, by=5), rvec = 7:1, dat, mu = .1, quiet = TRUE, silent = FALSE, rho0=100)
-
-valerrsOurs <- array(0, dim=c(length(modFit$s), length(modFit$r),J))
-for(kk in 1:(length(modFit$s))){
-  for(jj in 1:length(modFit$r)){
-    for(ll in 1:J){
-      valerrsOurs[kk,jj,ll] <- coxnet.deviance(y=Surv(datVal[[ll]]$time, datVal[[ll]]$status), pred = datVal[[ll]]$X%*%modFit$beta[,ll,kk,jj])
-    }
-  }
-}
-
-out <- which(apply(valerrsOurs, c(1,2),sum) == min(apply(valerrsOurs, c(1,2),sum)), arr.ind=TRUE)
-betaLR <- modFit$beta[,,out[1,1], out[1,2]]
-
-
 
 store <- list(
   "RidgeBeta" = RidgeBeta,
@@ -167,6 +180,11 @@ store <- list(
   "valerrsOursGL" = valerrsOursGL,
   "valerrsOursRR" = valerrsOursRR,
   "betaLR" = betaLR,
+  "betaLR2" = betaLR2,
+  "betaLR4" = betaLR4,
+  "betaLR6" = betaLR6,
+  "betaLR7" = betaLR7,
+  "betaLR8" = betaLR8,
   "SigmaX" = SigmaX,
   "valerrsOurs" = valerrsOurs,
   "beta" = beta
@@ -178,14 +196,23 @@ saveRDS(store, paste(savefile, uu,".RDS", sep=""))
 # ---------------------------------------------------------------------------
 # Compute statistics and save as separate file
 # ---------------------------------------------------------------------------
-jours_Err <- rep(0, 5)
-sours_Err <- rep(0, 5)
-lrours_Err <- rep(0, 5)
-l2_Err <- rep(0, 5)
-l1_Err <- rep(0, 5)
-l2proj_Err <- rep(0, 5)
-l1proj_Err <- rep(0, 5)
-NCours_Err <- rep(0,5)
+jours_Err <- rep(0, 6 + J)
+sours_Err <- rep(0, 6 + J)
+lrours_Err <- rep(0, 6 + J)
+l2_Err <- rep(0, 6 + J)
+l1_Err <- rep(0, 6 + J)
+l2proj_Err <- rep(0, 6 + J)
+l1proj_Err <- rep(0, 6 + J)
+NCours_Err <- rep(0, 6 + J)
+NCours2_Err <- rep(0,6 + J)
+NCours4_Err <- rep(0,6 + J)
+NCours6_Err <- rep(0,6 + J)
+NCours7_Err <- rep(0,6 + J)
+NCours8_Err <- rep(0,6 + J)
+
+
+
+
 library(MASS)
 library(survival)
 library(hdnom)
@@ -198,6 +225,12 @@ sBeta <- store$betaGL
 jBeta <- store$betaRRGL
 beta <- store$beta
 ncBeta <- store$betaLR
+ncBeta2 <- store$betaLR2
+ncBeta4 <- store$betaLR4
+ncBeta6 <- store$betaLR6
+ncBeta7 <- store$betaLR7
+ncBeta8 <- store$betaLR8
+
 
 ME <- function(betaInput){
   sum(diag(tcrossprod(crossprod(beta - betaInput, SigmaX), t(beta - betaInput))))
@@ -211,6 +244,11 @@ lrours_Err[1] <- ME(lrBeta)
 sours_Err[1] <- ME(sBeta)
 jours_Err[1] <- ME(jBeta)
 NCours_Err[1] <- ME(ncBeta)
+NCours2_Err[1] <- ME(ncBeta2)
+NCours4_Err[1] <- ME(ncBeta4)
+NCours6_Err[1] <- ME(ncBeta6)
+NCours7_Err[1] <- ME(ncBeta7)
+NCours8_Err[1] <- ME(ncBeta8)
 
 
 Conc <- function(betaInput){
@@ -225,6 +263,11 @@ lrours_Err[2] <- Conc(lrBeta)
 sours_Err[2] <- Conc(sBeta)
 jours_Err[2] <- Conc(jBeta)
 NCours_Err[2] <- Conc(ncBeta)
+NCours2_Err[2] <- Conc(ncBeta2)
+NCours4_Err[2] <- Conc(ncBeta4)
+NCours6_Err[2] <- Conc(ncBeta6)
+NCours7_Err[2] <- Conc(ncBeta7)
+NCours8_Err[2] <- Conc(ncBeta8)
 
 
 getBrierMedian <- function(betaIn){
@@ -283,6 +326,13 @@ lrours_Err[3] <- getBrierMedian(lrBeta)
 sours_Err[3] <- getBrierMedian(sBeta)
 jours_Err[3] <- getBrierMedian(jBeta)
 NCours_Err[3] <- getBrierMedian(ncBeta)
+NCours2_Err[3] <- getBrierMedian(ncBeta2)
+NCours4_Err[3] <- getBrierMedian(ncBeta4)
+NCours6_Err[3] <- getBrierMedian(ncBeta6)
+NCours7_Err[3] <- getBrierMedian(ncBeta7)
+NCours8_Err[3] <- getBrierMedian(ncBeta8)
+
+
 
 l2_Err[4] <- getBrier75(ridgeBeta)
 l2proj_Err[4] <- getBrier75(ridgeBetaLR)
@@ -292,7 +342,11 @@ lrours_Err[4] <- getBrier75(lrBeta)
 sours_Err[4] <- getBrier75(sBeta)
 jours_Err[4] <- getBrier75(jBeta)
 NCours_Err[4] <- getBrier75(ncBeta)
-
+NCours2_Err[4] <- getBrier75(ncBeta2)
+NCours4_Err[4] <- getBrier75(ncBeta4)
+NCours6_Err[4] <- getBrier75(ncBeta6)
+NCours7_Err[4] <- getBrier75(ncBeta7)
+NCours8_Err[4] <- getBrier75(ncBeta8)
 
 
 l2_Err[5] <- getBrier25(ridgeBeta)
@@ -303,7 +357,49 @@ lrours_Err[5] <- getBrier25(lrBeta)
 sours_Err[5] <- getBrier25(sBeta)
 jours_Err[5] <- getBrier25(jBeta)
 NCours_Err[5] <- getBrier25(ncBeta)
+NCours2_Err[5] <- getBrier25(ncBeta2)
+NCours4_Err[5] <- getBrier25(ncBeta4)
+NCours6_Err[5] <- getBrier25(ncBeta6)
+NCours7_Err[5] <- getBrier25(ncBeta7)
+NCours8_Err[5] <- getBrier25(ncBeta8)
 
+
+
+MSE <- function(betaInput){
+  mean((beta - betaInput)^2)
+}
+
+l2_Err[6] <- MSE(ridgeBeta)
+l2proj_Err[6] <- MSE(ridgeBetaLR)
+l1_Err[6] <- MSE(lassoBeta)
+l1proj_Err[6] <- MSE(lassoBetaLR)
+lrours_Err[6] <- MSE(lrBeta)
+sours_Err[6] <- MSE(sBeta)
+jours_Err[6] <- MSE(jBeta)
+NCours_Err[6] <- MSE(ncBeta)
+NCours2_Err[6] <- MSE(ncBeta2)
+NCours4_Err[6] <- MSE(ncBeta4)
+NCours6_Err[6] <- MSE(ncBeta6)
+NCours7_Err[6] <- MSE(ncBeta7)
+NCours8_Err[6] <- MSE(ncBeta8)
+
+
+for(j in 1:J){
+  MSE <- function(betaInput){crossprod(beta[,j]-  betaInput[,j], SigmaX)%*%(beta[,j]-  betaInput[,j])}
+  l2_Err[6+j] <- MSE(ridgeBeta)
+  l2proj_Err[6+j] <- MSE(ridgeBetaLR)
+  l1_Err[6+j] <- MSE(lassoBeta)
+  l1proj_Err[6+j] <- MSE(lassoBetaLR)
+  lrours_Err[6+j] <- MSE(lrBeta)
+  sours_Err[6+j] <- MSE(sBeta)
+  jours_Err[6+j] <- MSE(jBeta)
+  NCours_Err[6+j] <- MSE(ncBeta)
+  NCours2_Err[6+j] <- MSE(ncBeta2)
+  NCours4_Err[6+j] <- MSE(ncBeta4)
+  NCours6_Err[6+j] <- MSE(ncBeta6)
+  NCours7_Err[6+j] <- MSE(ncBeta7)
+  NCours8_Err[6+j] <- MSE(ncBeta8)
+}
 
 results <- list(
   "jours_Err" = jours_Err,
@@ -313,7 +409,12 @@ results <- list(
   "l1_Err" = l1_Err,
   "l2proj_Err" = l2proj_Err,
   "l1proj_Err" = l1proj_Err,
-  "NCours_Err" = NCours_Err
+  "NCours_Err" = NCours_Err,
+  "NCours2_Err" = NCours2_Err,
+  "NCours4_Err" = NCours4_Err,
+  "NCours6_Err" = NCours6_Err,
+  "NCours7_Err" = NCours7_Err,
+  "NCours8_Err" = NCours8_Err
   )
 
 saveRDS(results, file=paste(savefile, uu,"_Summary.RDS", sep=""))

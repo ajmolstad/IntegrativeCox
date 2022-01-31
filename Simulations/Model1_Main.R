@@ -2,10 +2,10 @@
 # Simulations for RR-cox
 # --------------------------------------
 uu <- as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
-source("~/blue/LRCox/Functions/RRCox_PPG.R")
-source("~/blue/LRCox/Functions/LRCox.R")
+source("~/blue/LRCox/Simulations_R1/Functions/RRCox_PPG.R")
+source("~/blue/LRCox/Simulations_R1/Functions/LRCox.R")
+soureCpp("~/blue/LRCox/Simulations_R1/Functions/updateBeta.cpp")
 
-X <- list(NA)
 library(Matrix)
 library(glmnet)
 library(MASS)
@@ -13,8 +13,7 @@ library(survival)
 set.seed(uu)
 
 J <- 12
-rms <- NULL
-Ns <- rep(c(1250, 1350, 1350), 4)
+Ns <- rep(c(1250, 1350, 1450), 4)
 nreps <- 100
 
 temp <- expand.grid(p = c(rep(250, nreps)), 
@@ -26,8 +25,9 @@ quan.cens <- .35
 kappa <- seq(2000, 2110, by = 10)
 
 
-genCoxDat <- function(uu, p, Ns, quan.cens, sigma.temp){
+genCoxDat <- function(uu, p, Ns, quan.cens){
   
+  X <- list(NA)
   set.seed(uu)
   SigmaX <- matrix(0, p, p)
   for(j in 1:p){
@@ -76,7 +76,8 @@ genCoxDat <- function(uu, p, Ns, quan.cens, sigma.temp){
                                   sample(c(-1, 1), 20*r, replace=TRUE), nrow=20)%*%t(temp)
     return(beta)
   }
-  
+
+  sigma.temp <- NULL
   beta <- get_beta(sigma.temp)
   
   dat <- list(NA)
@@ -90,7 +91,7 @@ genCoxDat <- function(uu, p, Ns, quan.cens, sigma.temp){
   
 }
 
-simDat <- genCoxDat(uu = uu, p = p, Ns = Ns, quan.cens = quan.cens, sigma.temp = sigma.temp)
+simDat <- genCoxDat(uu = uu, p = p, Ns = Ns, quan.cens = quan.cens)
 beta <- simDat$beta
 dat <- simDat$dat
 SigmaX <- simDat$SigmaX
@@ -127,6 +128,6 @@ for(j in 1:J){
 }
 
 
-savefile <- paste("~/blue/LRCox/Simulations/Model1/Results/Model1_p",p,"_r",r,"_", sep="")
-source("~/blue/LRCox/Simulations/Fit_Main.R")
+savefile <- paste("~/blue/LRCox/Simulations_R1/Model1/Results/Model1_p",p,"_r",r,"_", sep="")
+source("~/blue/LRCox/Simulations_R1/Fit_Main.R")
 
