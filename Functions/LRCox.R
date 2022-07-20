@@ -12,7 +12,7 @@
 
 
 
-  getPath <- function(svec, rvec, dat, mu, quiet, silent, rho0) {
+  IntCox <- function(svec, rvec, dat, mu, quiet, silent, rho0) {
       
       # ------------------------------------------
       # Preliminaries

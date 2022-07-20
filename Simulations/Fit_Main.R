@@ -204,11 +204,11 @@ l1_Err <- rep(0, 6 + J)
 l2proj_Err <- rep(0, 6 + J)
 l1proj_Err <- rep(0, 6 + J)
 NCours_Err <- rep(0, 6 + J)
-NCours2_Err <- rep(0,6 + J)
-NCours4_Err <- rep(0,6 + J)
-NCours6_Err <- rep(0,6 + J)
-NCours7_Err <- rep(0,6 + J)
-NCours8_Err <- rep(0,6 + J)
+NCours2_Err <- rep(0, 6 + J)
+NCours4_Err <- rep(0, 6 + J)
+NCours6_Err <- rep(0, 6 + J)
+NCours7_Err <- rep(0, 6 + J)
+NCours8_Err <- rep(0, 6 + J)
 
 
 

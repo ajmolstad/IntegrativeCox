@@ -1,7 +1,7 @@
 ---
 title: "IntegrativeCox Example"
 author: "Aaron J. Molstad and Rohit K. Patra"
-date: "Updated on January 28th, 2022"
+date: "Updated on July 20th, 2022"
 output:
   pdf_document: default
   html_document: default
@@ -139,7 +139,8 @@ source(paste(functionspath, "LRCox.R", sep=""))
 sourceCpp(paste(functionspath, "updateBeta.cpp", sep=""))
 
 # ------- fit model for multiple (s,r) combinations
-fit <- IntCox(svec = c(5, 10, 15), rvec = c(4,6), dat = dat, mu = 0.1, quiet = TRUE, silent = TRUE, rho0 = 100)
+fit <- IntCox(svec = c(5, 10, 15), rvec = c(4,6), dat = dat, mu = 0.1, 
+              quiet = TRUE, silent = TRUE, rho0 = 100)
 ```
 Examining the output, we see that $\texttt{fit}$ has three elements: $\texttt{beta, s, r}$. The array $\texttt{beta}$ is $p \times J \times s^\star \times r^\star$ where $s^\star$ is the number of candidate $s$ and $r^\star$ is the number of candidate $r$. Now, let us check the validation partial log-likelihood to determine which pair of tuning parameters is best. 
 
@@ -148,7 +149,8 @@ valerrsOurs <- array(0, dim=c(length(fit$s), length(fit$r),J))
 for(kk in 1:(length(fit$s))){
   for(jj in 1:length(fit$r)){
     for(ll in 1:J){
-      valerrsOurs[kk,jj,ll] <- coxnet.deviance(y=Surv(datVal[[ll]]$time, datVal[[ll]]$status), pred = datVal[[ll]]$X%*%fit$beta[,ll,kk,jj])
+      valerrsOurs[kk,jj,ll] <- coxnet.deviance(y=Surv(datVal[[ll]]$time, datVal[[ll]]$status), 
+                                               pred = datVal[[ll]]$X%*%fit$beta[,ll,kk,jj])
     }
   }
 }
