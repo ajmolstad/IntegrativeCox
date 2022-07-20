@@ -252,7 +252,7 @@ NCours8_Err[1] <- ME(ncBeta8)
 
 
 Conc <- function(betaInput){
-  mean(sapply(1:3, function(x){summary(coxph(Surv(datTest[[x]]$Tlat, rep(1, length(datTest[[x]]$Tlat))) ~ datTest[[x]]$X%*%betaInput[,x]))[14]$concordance[1]}))
+  mean(sapply(1:J, function(x){survConcordance(Surv(datTest[[x]]$Tlat, rep(1, length(datTest[[x]]$Tlat))) ~ datTest[[x]]$X%*%betaInput[,x])$concordance}))
 }
 
 l2_Err[2] <- Conc(ridgeBeta)

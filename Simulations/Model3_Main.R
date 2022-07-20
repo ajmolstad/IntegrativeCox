@@ -126,12 +126,6 @@ for(j in 1:J){
   
 }
 
-# --------------
-# Check R^2
-# --------------
-# 1 - exp(-(coxnet.deviance(y=Surv(dat[[1]]$time, dat[[1]]$status), pred = rep(0, dim(dat[[1]]$linPred)[1])) - coxnet.deviance(y=Surv(dat[[1]]$time, dat[[1]]$status), pred = dat[[1]]$linPred))/100)
-# 1 - exp(-(coxnet.deviance(y=Surv(dat[[2]]$time, dat[[2]]$status), pred = rep(0, dim(dat[[2]]$linPred)[1])) - coxnet.deviance(y=Surv(dat[[2]]$time, dat[[2]]$status), pred = dat[[2]]$linPred))/200)
-# 1 - exp(-(coxnet.deviance(y=Surv(dat[[3]]$time, dat[[3]]$status), pred = rep(0, dim(dat[[3]]$linPred)[1])) - coxnet.deviance(y=Surv(dat[[3]]$time, dat[[3]]$status), pred = dat[[3]]$linPred))/300)
 
 savefile <- paste("~/blue/LRCox/Simulations_R1/Model3/Results/Model3_p",p,"_r",r,"_", sep="")
 source("~/blue/LRCox/Simulations_R1/Fit_Main.R")
