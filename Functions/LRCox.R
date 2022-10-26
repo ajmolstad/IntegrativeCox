@@ -197,19 +197,19 @@ IntCox <- function(svec, rvec, dat, mu, quiet, silent, rho0) {
           beta0 <- matrix(0, nrow=p, ncol=J)
         } else {
           beta0 <- update$beta
-        	obj.new <- update$obj.current
-        	if (sum((beta0 - ProjCr(beta0, r))^2) + sum((beta0 - ProjSs(beta0, s))^2) < 1e-12) {
-        	  penMethod <- FALSE
-        	} else {
-        	  rho <- rho*1.2
+          obj.new <- update$obj.current
+          if (sum((beta0 - ProjCr(beta0, r))^2) + sum((beta0 - ProjSs(beta0, s))^2) < 1e-12) {
+            penMethod <- FALSE
+          } else {
+            rho <- rho*1.2
             if (!silent) {
           	  cat("# ---------------------- ", "\n")
           	  cat("# Through rho = ", rho,  "\n")
           	  cat("# s = ", s, ", r = ", r, "\n")
           	  cat("# ---------------------- ", "\n")
             }
-        	  obj.start <- obj.new
-        	}
+            obj.start <- obj.new
+          }
         }
       }
       
