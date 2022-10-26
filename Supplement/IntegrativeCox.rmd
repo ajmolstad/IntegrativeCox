@@ -10,7 +10,7 @@ output:
 functionspath <- "/Users/aaron/Documents/GitHub/IntegrativeCox/Functions/"
 ```
 
-In this document, we provide a short example of how to (1) format data for integrative survival analysis with our method and (2) how to implement our method. First, let us generate $J = 12$ cancer datasets in the manner described in Section 5 of the manuscript. 
+In this document, we provide a short example of how to (1) format data for integrative survival analysis with our software and (2) how to implement our method. First, let us generate $J = 12$ datasets in the manner described in Section 5 of the manuscript. 
 ```{r setup, include=TRUE, cache=TRUE}
 library(Matrix)
 library(glmnet)
@@ -127,7 +127,7 @@ for(j in 1:J){
 }
 
 ```
-Now, we have three types of datasets: training, testing and validation ($\texttt{dat}, \texttt{datVal},$ and $ \texttt{datTest}$). Each is a list of length $J = 12$, and has subject id, event time (time), status (alive or deceased at event time), the predictor matrix $X$, and some other information which is not used for model fitting. 
+Now, we have three types of datasets: training, testing and validation ($\texttt{dat}, \texttt{datVal},$ and $ \texttt{datTest}$). Each is a list of length $J = 12$, and has subject id, time (event time), status (alive or deceased at event time), the predictor matrix $X$, and some other information which is not used for model fitting. 
 ```{r, include=TRUE, cache=TRUE}
 length(dat)
 str(dat[[1]])
@@ -163,10 +163,10 @@ cat("s = ", fit$s[out[1,1]], ", r = ", fit$r[out[1,2]], "\n")
 ```
 We can examine the regression coefficient estimate: 
 ```{r, include = TRUE, cache=TRUE}
-image(betaLR)
+image(t(betaLR))
 ```
 
-Similarly, let us extra the left singular vectors of the coefficient matrix estimate so that we may construct the factors for, say, the first population. 
+Similarly, let us extract the left singular vectors of the coefficient matrix estimate so that we may construct the factors for, say, the first population. 
 ```{r, include = TRUE, cache=TRUE}
 U <- svd(betaLR)$u
 u.fit <- U[,1:fit$r[out[1,2]]]
@@ -176,6 +176,6 @@ dim(X1factors)
 Now, let us fit a model to the testing data using the estimated factors from the training data. 
 ```{r}
 library(survival)
-summary(coxph(Surv(datTest[[1]]$time, datTest[[1]]$status)~X1factors))
+summary(coxph(Surv(datTest[[1]]$time, datTest[[1]]$status) ~ X1factors))
 ```
 We can see that the factors lead to relatively high concordance, and all tests suggest they are significantly associated with survival. 

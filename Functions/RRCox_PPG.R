@@ -30,15 +30,10 @@ svd2 <- function(x, nu = min(n, p), nv = min(n, p), LINPACK = TRUE){
 
 beta.ProxProxGrad <- function(dat, beta.temp, beta.temp.2, z,  taus, Es, Rs, Ds, lambda, lambda2,  max.iter, tol, inner.quiet){
 
-
   J <- length(dat)
   p <- dim(dat[[1]]$x)[2]
   n <- sum(unlist(lapply(dat, function(x){dim(x$x)[1]})))
-  #W <- matrix(unlist(lapply(dat, function(x){dim(x$x)[1]}))/n, byrow=TRUE, nrow=p, ncol=J)
- # W <- W/max(W)
-
   eval.obj.beta <- function(dat, beta, beta.svd, taus, Es, Rs, Ds, lambda, lambda2){
-    
     J <- length(dat)
     n <- sum(unlist(lapply(dat, function(x){dim(x$x)[1]})))
     obj <- 0
@@ -54,7 +49,6 @@ beta.ProxProxGrad <- function(dat, beta.temp, beta.temp.2, z,  taus, Es, Rs, Ds,
   }
 
   eval.loss.beta <- function(dat, beta, taus, Es, Rs, Ds){
-    
     J <- length(dat)
     n <- sum(unlist(lapply(dat, function(x){dim(x$x)[1]})))
     obj <- 0
@@ -69,23 +63,17 @@ beta.ProxProxGrad <- function(dat, beta.temp, beta.temp.2, z,  taus, Es, Rs, Ds,
   }
     
   grad.beta <- function(dat, beta, taus, Ds, Es, Rs, lambda){
-
     J <- length(dat)
     n <- sum(unlist(lapply(dat, function(x){dim(x$x)[1]})))
     gradout <- matrix(0, nrow=dim(beta)[1], ncol=dim(beta)[2])
-    
     for(j in 1:J){
-
       t0 <- exp(tcrossprod(dat[[j]]$x, t(beta[,j])))
       t1 <- (dat[[j]]$x)*matrix(t0, nrow=length(t0), ncol=dim(dat[[j]]$x)[2])
-
       for(x in 1:length(taus[[j]])){
         temp0 <- sum(t0[Rs[[j]][[x]]])
         gradout[,j] <- gradout[,j] + (Ds[[j]][[x]]/temp0)*colsums(t1[Rs[[j]][[x]],,drop=FALSE]) - colsums(dat[[j]]$x[Es[[j]][[x]],,drop=FALSE])
       }
-      
     }
-
     return(gradout/n)
   }
 
@@ -128,21 +116,14 @@ beta.ProxProxGrad <- function(dat, beta.temp, beta.temp.2, z,  taus, Es, Rs, Ds,
     }
   }
   gamma0 <- 4*(f.Z0 - f.Zt)/sum(grad.Z0^2)
-
-  #gamma0 <- 10
   gamma.t <- gamma0
 
   while(iterating){
-
     linesearch <- TRUE
     grad.temp <- grad.beta(dat, Z.t, taus, Ds, Es, Rs, lambda)
     f.Z.t <- eval.loss.beta(dat, Z.t, taus, Es, Rs, Ds)
-
     while(linesearch){
       X.tp1 <- rowSoft(Z.t - gamma.t*U.t - gamma.t*grad.temp, gamma.t*lambda2)
-      #X.tp1 <- pmax(abs(Z.t - gamma.t*U.t - gamma.t*grad.temp) - W*gamma.t*lambda2, 0)*sign(Z.t - gamma.t*U.t - gamma.t*grad.temp)
-      #eo <- svd(Z.t - gamma.t*U.t - gamma.t*grad.temp)
-      #X.tp1 <- tcrossprod(eo$u*(tcrossprod(rep(1,dim(eo$u)[1]), pmax(eo$d - gamma.t*lambda, 0))),eo$v)
       f.X.tp1 <- eval.loss.beta(dat, X.tp1, taus, Es, Rs, Ds)
       Q.X.tp1 <- f.Z.t + sum(grad.temp*(X.tp1 - Z.t)) + (sum((X.tp1 - Z.t)^2)/(2*gamma.t))
       if(f.X.tp1 > Q.X.tp1){
@@ -152,20 +133,10 @@ beta.ProxProxGrad <- function(dat, beta.temp, beta.temp.2, z,  taus, Es, Rs, Ds,
       }
     }
 
-    #Z.tp1 <- rowSoft(X.tp1 + gamma.t*U.t, gamma.t*lambda2)
     eo <- svd2(X.tp1 + gamma.t*U.t)
     Z.tp1 <- tcrossprod(eo$u*(tcrossprod(rep(1,dim(eo$u)[1]), pmax(eo$d - gamma.t*lambda, 0))),eo$v)
     U.tp1 <- U.t + (X.tp1 - Z.tp1)/gamma.t
 
-    # ----------------------------------------
-    # Get next step size and update iterates
-    # ----------------------------------------
-    # delta.t <- Q.X.tp1 - f.X.tp1
-    # gamma.t <- sqrt(gamma.t^2 + (gamma.t*delta.t)/(4*p*J*lambda))
-
-    # if(k.iter %% 10 == 0){
-    #   gamma.t <- gamma0
-    # }
 
     Z.t <- Z.tp1
     X.t <- X.tp1
@@ -192,32 +163,9 @@ beta.ProxProxGrad <- function(dat, beta.temp, beta.temp.2, z,  taus, Es, Rs, Ds,
     }
 
     k.iter <- k.iter + 1
-    # cat(gamma.t, "\n")
-    # cat("# --------------------- ")
 
   }
-
-
-  # beta.koh <- rowSoft(z, alpha*lambda2)
-  # b.Out <- X.tp1
-  # X.tp1[which(apply(Xtp1, 1, function(x){sqrt(sum(x^2))}) < 1e-6),] <- 0
-  # getVals <- svd(Z.tp1)
-  # temp <- (1*(X.tp1!=0))*Z.tp1
-  # eo <- svd(temp)
-  # if(any(abs(getVals$d) > 1e-8)){
-  #   r <- max(which(abs(getVals$d) > 1e-8))
-  #   beta.out <- eo$u[,1:r,drop=FALSE]%*%diag(eo$d[1:r])%*%t(eo$v[,1:r, drop=FALSE])
-  # } else {
-  #   beta.out <- matrix(0, nrow=p, ncol=J)
-  # }
   return(list("beta" = (1*(X.tp1!=0))*Z.tp1, "z" = U.tp1, "beta.2" = Z.tp1))
-  #return(list("beta" = Z.tp1, "z" = U.tp1, "beta.2" = X.tp1))
-  # checkMat <- Z.tp1
-  # for(j in 1:p){
-  #   checkMat[j,] <- Z.tp1[j,]/sqrt(sum(Z.tp1[j,]^2))
-  # }
-  # grad.beta(dat, X.tp1, taus, Ds, Es, Rs, lambda) + lambda*svd(X.tp1)$u%*%t(svd(X.tp1)$v) + lambda2*checkMat
- 
 }
 
 
