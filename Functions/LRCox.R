@@ -44,7 +44,7 @@ IntCox <- function(svec, rvec, dat, mu, quiet, silent, rho0) {
   
   
   for (jj in 1:J) {
-    taus[[jj]] <- dat[[jj]]$time[which(dat[[jj]]$status==1)]
+    taus[[jj]] <- unique(dat[[jj]]$time[which(dat[[jj]]$status==1)])
     Es[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time == x)})
     Ds[[jj]] <- sapply(taus[[jj]], function(x){length(which(dat[[jj]]$time == x))})
     Rs[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time >= x)})

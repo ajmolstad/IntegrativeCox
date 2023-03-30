@@ -535,7 +535,7 @@ RRCox.cv.lam1lam2 <- function(dat,
   Rs <- list(NA)
   Ds <- list(NA)
   for(jj in 1:J){
-    taus[[jj]] <- dat[[jj]]$time[which(dat[[jj]]$status==1)]
+    taus[[jj]] <- unique(dat[[jj]]$time[which(dat[[jj]]$status==1)])
     Es[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time == x)})
     Ds[[jj]] <- sapply(taus[[jj]], function(x){length(which(dat[[jj]]$time == x))})
     Rs[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time >= x)})
@@ -757,7 +757,7 @@ RRCox.cv.lam1lam2 <- function(dat,
         dat[[jj]]$timeTest <- dat[[jj]]$time[cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTrain <- dat[[jj]]$status[-cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTest <-  dat[[jj]]$status[cv.index[[jj]][[kk]]]
-        tausTrain[[jj]] <- dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)]
+        tausTrain[[jj]] <- unique(dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)])
         EsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain == x)})
         DsTrain[[jj]] <- sapply(tausTrain[[jj]],function(x){length(which(dat[[jj]]$timeTrain == x))})
         RsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain >= x)})
@@ -884,7 +884,7 @@ RRCox.cv.lam1 <- function(dat,nlambda1,
   Rs <- list(NA)
   Ds <- list(NA)
   for(jj in 1:J){
-    taus[[jj]] <- dat[[jj]]$time[which(dat[[jj]]$status==1)]
+    taus[[jj]] <- unique(dat[[jj]]$time[which(dat[[jj]]$status==1)])
     Es[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time == x)})
     Ds[[jj]] <- sapply(taus[[jj]], function(x){length(which(dat[[jj]]$time == x))})
     Rs[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time >= x)})
@@ -1059,7 +1059,7 @@ RRCox.cv.lam1 <- function(dat,nlambda1,
         dat[[jj]]$timeTest <- dat[[jj]]$time[cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTrain <- dat[[jj]]$status[-cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTest <-  dat[[jj]]$status[cv.index[[jj]][[kk]]]
-        tausTrain[[jj]] <- dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)]
+        tausTrain[[jj]] <- unqiue(dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)])
         EsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain == x)})
         DsTrain[[jj]] <- sapply(tausTrain[[jj]],function(x){length(which(dat[[jj]]$timeTrain == x))})
         RsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain >= x)})
@@ -1160,7 +1160,7 @@ RRCox.cv.lam2 <- function(dat,nlambda2,
   Rs <- list(NA)
   Ds <- list(NA)
   for(jj in 1:J){
-    taus[[jj]] <- dat[[jj]]$time[which(dat[[jj]]$status==1)]
+    taus[[jj]] <- unique(dat[[jj]]$time[which(dat[[jj]]$status==1)])
     Es[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time == x)})
     Ds[[jj]] <- sapply(taus[[jj]], function(x){length(which(dat[[jj]]$time == x))})
     Rs[[jj]] <- sapply(taus[[jj]], function(x){which(dat[[jj]]$time >= x)})
@@ -1335,7 +1335,7 @@ RRCox.cv.lam2 <- function(dat,nlambda2,
         dat[[jj]]$timeTest <- dat[[jj]]$time[cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTrain <- dat[[jj]]$status[-cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTest <-  dat[[jj]]$status[cv.index[[jj]][[kk]]]
-        tausTrain[[jj]] <- dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)]
+        tausTrain[[jj]] <- unique(dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)])
         EsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain == x)})
         DsTrain[[jj]] <- sapply(tausTrain[[jj]],function(x){length(which(dat[[jj]]$timeTrain == x))})
         RsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain >= x)})
