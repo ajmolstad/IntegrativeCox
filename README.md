@@ -6,7 +6,7 @@ In the **Functions** directory, you will find **LRCox.R**, which contains the fu
 
 In the Simulations directory, one can find the scripts needed to reproduce exactly the results from Section 5 of the manuscript. Specifically, ModelX_Main.R creates data for one of three models, then sources the Fit_Main.R script, which fits the models and computes the performance metrics. Each bash script is used to initialize all replicates for each of the three models.  Of course, one will need to carefully modify file paths since this is taken directly from A. J. Molstad's working directory on HiperGator and the University of Florida. 
 
-For clarifications or citation instructions, please email amolstad@ufl.edu. 
+For clarifications or specific usage instructions, please contact [amolstad@umn.edu](amolstad@umn.edu). 
 
 ### Citation instructions
 Please cite the most recent version of the article mentioned above. As of June 2023, this was the following (in bibtex): 
