@@ -1059,7 +1059,7 @@ RRCox.cv.lam1 <- function(dat,nlambda1,
         dat[[jj]]$timeTest <- dat[[jj]]$time[cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTrain <- dat[[jj]]$status[-cv.index[[jj]][[kk]]]
         dat[[jj]]$statusTest <-  dat[[jj]]$status[cv.index[[jj]][[kk]]]
-        tausTrain[[jj]] <- unqiue(dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)])
+        tausTrain[[jj]] <- unique(dat[[jj]]$timeTrain[which(dat[[jj]]$statusTrain==1)])
         EsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain == x)})
         DsTrain[[jj]] <- sapply(tausTrain[[jj]],function(x){length(which(dat[[jj]]$timeTrain == x))})
         RsTrain[[jj]] <- sapply(tausTrain[[jj]], function(x){which(dat[[jj]]$timeTrain >= x)})
